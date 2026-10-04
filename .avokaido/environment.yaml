@@ -1,0 +1,40 @@
+# Avokaido per-project environment manifest.
+#
+# Read by the desktop app's "Get this running" page: it runs every
+# `bootstrap:` command in order on first open, then offers the `run:`
+# entries as one-click launch targets.
+
+name: avokaido_starter
+type: mobile
+generated_by: avokaido-wizard
+
+toolchains:
+  - id: flutter
+    version: "3.41.7"
+    check: { cmd: "flutter --version" }
+    install:
+      darwin:  "brew install --cask flutter"
+      windows: "winget install Google.Flutter"
+      linux:   "sudo snap install flutter --classic"
+
+services: []
+
+# The native android/ and ios/ projects are committed, so there is nothing to
+# generate on first open.
+bootstrap:
+  - "flutter pub get"
+
+run:
+  - id: ios
+    label: "iOS Simulator"
+    cmd: "flutter run -d iphone"
+  - id: android
+    label: "Android Emulator"
+    cmd: "flutter run -d android"
+
+env: []
+
+integrations:
+  firebase_auth: false
+  firestore: false
+  cloud_functions: false

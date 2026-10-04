@@ -1,0 +1,59 @@
+name: flutter-ci
+
+# Continuous integration for this Avokaido-generated mobile app: formatting,
+# static analysis, tests and a debug Android build on every push and pull
+# request. No secrets required.
+#
+# Written when the project was created, and locked: Avokaido's agent may not
+# change what "passing" means in the same change that is being judged.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push to the same ref cancels an in-flight run.
+concurrency:
+  group: flutter-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.41.7
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      # The Android project has to keep building, not only the Dart code.
+      - name: Build a debug APK
+        run: flutter build apk --debug
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          if-no-files-found: ignore
